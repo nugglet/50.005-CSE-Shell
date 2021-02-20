@@ -249,7 +249,40 @@ int shellExecuteInput(char **args)
   /** TASK 3 **/
 
   // 1. Check if args[0] is NULL. If it is, an empty command is entered, return 1
+
+  if (args[0] == NULL){
+    return 1;
+  }
+  else{
+    for(int i=4; i < sizeof(builtin_commands); i++ ){
+      if (strcmp(args[0],builtin_commands[i])){
+        pid_t child = fork();
+        if (child == -1){
+          
+          printf("fork() unsuccessful");
+
+          return 1;
+        }
+        
+        pid_t waitpid(child, SIGCHLD, WUNTRACED);
+
+      }
+      else{
+
+        printf("arg[0] not in builtin_commands");
+
+        return 1;
+
+
+        
+        }
+        
+      }
+    }
+  }
   // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
+
+  
   // 3. If conditions in (2) are satisfied, perform fork(). Check if fork() is successful.
   // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
   // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
@@ -292,10 +325,8 @@ char **shellTokenizeInput(char *line)
   // 3. Tokenize the *line using strtok() function
   // 4. Return the char **
 
-  char delimit[] = " \t\r\n\v\f";
-
   char** address = malloc(sizeof(char*) * 8);
-  char* token = strtok(line, delimit);
+  char* token = strtok(line, SHELL_INPUT_DELIM);
 
   if (address == NULL){
     printf("address is NULL");
@@ -304,7 +335,7 @@ char **shellTokenizeInput(char *line)
  
   for (int i = 0; i < sizeof(address); i++){
     address[i] = token;
-    token = strtok(NULL, delimit);
+    token = strtok(NULL, SHELL_INPUT_DELIM);
 
     if (token == NULL){
       address[i+1] = NULL;
