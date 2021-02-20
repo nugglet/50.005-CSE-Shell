@@ -249,48 +249,49 @@ int shellExecuteInput(char **args)
   /** TASK 3 **/
 
   // 1. Check if args[0] is NULL. If it is, an empty command is entered, return 1
-
-  if (args[0] == NULL){
-    return 1;
-  }
-  else{
-    for(int i=4; i < sizeof(builtin_commands); i++ ){
-      if (strcmp(args[0],builtin_commands[i])){
-        pid_t child = fork();
-        if (child == -1){
-          
-          printf("fork() unsuccessful");
-
-          return 1;
-        }
-        
-        pid_t waitpid(child, SIGCHLD, WUNTRACED);
-
-      }
-      else{
-
-        printf("arg[0] not in builtin_commands");
-
-        return 1;
-
-
-        
-        }
-        
-      }
-    }
-  }
-  // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
-
-  
+  // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage. 
   // 3. If conditions in (2) are satisfied, perform fork(). Check if fork() is successful.
   // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
   // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
   // 6. Return the child's return value to the caller of shellExecuteInput
   // 7. If args[0] is not in builtin_command, print out an error message to tell the user that command doesn't exist and return 1
+  int i;
+  if (args[0] == NULL){
+    return 1;
+  }
+  else{
+    for(i = 0; i < numOfBuiltinFunctions(); i++ ){
+      if (strcmp(args[0],builtin_commands[i]) == 0 && i > 4){
+        break;
+      } else if (strcmp(args[0], builtin_commands[i]) == 0 && i < 4){
+        return builtin_commandFunc[i](args);
 
-  return 1;
+      } else if (i == numOfBuiltinFunctions() - 1){
+        printf("Invalid command. Use help to see the available commands.");
+        return 1;
+        }
+      }
+      
+    pid_t child = fork();
+    int status; 
+    if (child == -1){
+      printf("fork unsuccessful");
+      return 1;
+    } else if (child == 0){
+      builtin_commandFunc[i](args);
+      exit(1);
+
+    } else if (child > 0){
+      waitpid(child, &status, WUNTRACED);
+      return WEXITSTATUS(WUNTRACED);
+    } else {
+      printf("Error");
+      return 1;
+
+    }
+  }      
 }
+
 
 /**
    Read line from stdin, return it to the Loop function to tokenize it
@@ -300,17 +301,21 @@ char *shellReadLine(void)
   /** TASK 1 **/
   // read one line from stdin using getline()
   // 1. Allocate a memory space to contain the string of input from stdin using malloc. Malloc should return a char* that persists even after this function terminates.
+  // 2. Check that the char* returned by malloc is not NULL  
+  // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
+  // 4. Return the char*
+
   char* buffer = malloc(sizeof(int) * 10);
   size_t size = sizeof(buffer);
-  // 2. Check that the char* returned by malloc is not NULL
   if (buffer == NULL) {
     return NULL;
   }
-  // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
- getline(&buffer, &size, stdin);
-  // 4. Return the char*
+  getline(&buffer, &size, stdin);
+  
   return buffer;
+  free(buffer);
 }
+
 
 /**
  Receives the *line, and return char** that tokenize the line
@@ -318,7 +323,6 @@ char *shellReadLine(void)
 
 char **shellTokenizeInput(char *line)
 {
-
   /** TASK 2 **/
   // 1. Allocate a memory space to contain pointers (addresses) to the first character of each word in *line. Malloc should return char** that persists after the function terminates.
   // 2. Check that char ** that is returend by malloc is not NULL
@@ -341,9 +345,8 @@ char **shellTokenizeInput(char *line)
       address[i+1] = NULL;
       break;
     }
-  }  
-    
-    return address;
+  }    
+  return address;
 }
 
  
@@ -389,6 +392,9 @@ int main(int argc, char **argv)
  printf("The first token is %s \n", args[0]);
  printf("The second token is %s \n", args[1]);
  
+ shellExecuteInput(args);
+ 
  return 0;
 }
+
 
