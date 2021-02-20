@@ -292,8 +292,31 @@ char **shellTokenizeInput(char *line)
   // 3. Tokenize the *line using strtok() function
   // 4. Return the char **
 
-  return NULL;
+  char delimit[] = " \t\r\n\v\f";
+
+  char** address = malloc(sizeof(char*) * 8);
+  char* token = strtok(line, delimit);
+
+  if (address == NULL){
+    printf("address is NULL");
+    return NULL;
+  }
+ 
+  for (int i = 0; i < sizeof(address); i++){
+    address[i] = token;
+    token = strtok(NULL, delimit);
+
+    if (token == NULL){
+      address[i+1] = NULL;
+      break;
+    }
+  }  
+    
+    return address;
 }
+
+ 
+
 
 /**
   The main loop where one reads line,
@@ -331,5 +354,10 @@ int main(int argc, char **argv)
  char* line = shellReadLine();
  printf("The fetched line is : %s \n", line);
  
+ char** args = shellTokenizeInput(line);
+ printf("The first token is %s \n", args[0]);
+ printf("The second token is %s \n", args[1]);
+ 
  return 0;
 }
+
