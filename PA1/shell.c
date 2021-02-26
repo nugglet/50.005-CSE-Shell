@@ -91,10 +91,10 @@ int shellListDir(char **args)
 
   if (exeStatus == -1) {
     printf("Failed to execute.");
-    return 1;
+    
   }
 
-  return exeStatus;
+  return 1;
 
 }
 
@@ -117,10 +117,10 @@ int shellCountLine(char **args)
 
   if (exeStatus == -1) {
     printf("Failed to execute.");
-    return 1;
+   
   }
 
-  return exeStatus;
+  return 1;
 
 }
 
@@ -142,10 +142,10 @@ int shellSummond(char **args)
 
   if (exeStatus == -1) {
     printf("Failed to execute.");
-    return 1;
+ 
   }
 
-  return exeStatus;
+  return 1;
 
 }
 
@@ -169,10 +169,10 @@ int shellCheckDaemon(char **args)
 
   if (exeStatus == -1) {
     printf("Failed to execute.");
-    return 1;
+   
   }
 
-  return exeStatus;
+  return 1;
 
 }
 
@@ -335,7 +335,6 @@ int shellExecuteInput(char **args)
 
       }
     }
-      
   }
   printf("Invalid command. Use help to see the available commands.");
       return 1;  
