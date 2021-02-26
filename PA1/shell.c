@@ -325,7 +325,7 @@ int shellExecuteInput(char **args)
 
         } else if (child > 0){
           waitpid(child, &status, WUNTRACED);
-          return WEXITSTATUS(WUNTRACED);
+          return WEXITSTATUS(status);
         } else {
           printf("Error");
           return 1;
@@ -361,7 +361,6 @@ char *shellReadLine(void)
   getline(&buffer, &size, stdin);
   
   return buffer;
-  free(buffer);
 }
 
 
@@ -409,7 +408,7 @@ void shellLoop(void)
   //instantiate local variables
   char *line;  // to accept the line of string from user
   char **args; // to tokenize them as arguments separated by spaces
-  int status;  // to tell the shell program whether to terminate shell or not
+  int status = 1;  // to tell the shell program whether to terminate shell or not
 
 
   /** TASK 5 **/
@@ -425,7 +424,19 @@ void shellLoop(void)
   // 7. free memory location containing char* to the first letter of each word in the input string
   // 8. check if shellExecuteInput returns 1. If yes, loop back to Step 1 and prompt user with new input. Otherwise, exit the shell. 
 
+  while(status == 1){
 
+    printf("CSEShell:");
+    fflush(stdout);
+
+    line = shellReadLine();
+    args = shellTokenizeInput(line);
+
+    status = shellExecuteInput(args);
+
+    free(line);
+    free(args);
+  }
 }
 
 int main(int argc, char **argv)
@@ -433,14 +444,7 @@ int main(int argc, char **argv)
  
  printf("Shell Run successful. Running now: \n");
  
- char* line = shellReadLine();
- printf("The fetched line is : %s \n", line);
- 
- char** args = shellTokenizeInput(line);
- printf("The first token is %s \n", args[0]);
- printf("The second token is %s \n", args[1]);
- 
- shellExecuteInput(args);
+ shellLoop();
  
  return 0;
 }
