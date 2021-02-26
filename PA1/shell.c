@@ -15,7 +15,14 @@ int shellFind(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellFind if execvp fails to allow loop to continue
 
-  return 1;
+  int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/find", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+    return 1;
+  }
+
+  return exeStatus;
 }
 
 /**
@@ -32,7 +39,14 @@ int shellDisplayFile(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellDisplayFile if execvp fails to allow loop to continue
 
+  int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/display", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+  }
+
   return 1;
+
 }
 
 /*
@@ -50,7 +64,14 @@ int shellListDirAll(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellListDirAll if execvp fails to allow loop to continue
 
+  int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/listdirall", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+  }
+
   return 1;
+
 }
 
 /*
@@ -66,8 +87,15 @@ int shellListDir(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellListDir
+  int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/listdir", args);
 
-  return 1;
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+    return 1;
+  }
+
+  return exeStatus;
+
 }
 
 /**
@@ -85,7 +113,15 @@ int shellCountLine(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellCountLine if execvp fails to allow loop to continue
 
-  return 1;
+ int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/countline", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+    return 1;
+  }
+
+  return exeStatus;
+
 }
 
 /**
@@ -102,7 +138,15 @@ int shellSummond(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellDaemonize if execvp fails to allow loop to continue
 
-  return 1;
+ int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/summond", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+    return 1;
+  }
+
+  return exeStatus;
+
 }
 
 
@@ -121,7 +165,15 @@ int shellCheckDaemon(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellCheckDaemon if execvp fails to allow loop to continue
 
-  return 1;
+ int exeStatus = execvp("/home/miles/Desktop/50.005-CSE-Shell/PA1/shellPrograms/checkdaemon", args);
+
+  if (exeStatus == -1) {
+    printf("Failed to execute.");
+    return 1;
+  }
+
+  return exeStatus;
+
 }
 
 /**
@@ -261,12 +313,12 @@ int shellExecuteInput(char **args)
   }
   else{
     for(i = 0; i < numOfBuiltinFunctions(); i++ ){
-      if (strcmp(args[0],builtin_commands[i]) == 0 && i > 4){
+      if (strcmp(args[0],builtin_commands[i]) == 0 && i > 3){
         break;
       } else if (strcmp(args[0], builtin_commands[i]) == 0 && i < 4){
         return builtin_commandFunc[i](args);
 
-      } else if (i == numOfBuiltinFunctions() - 1){
+      } else {
         printf("Invalid command. Use help to see the available commands.");
         return 1;
         }
