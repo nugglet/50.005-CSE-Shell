@@ -314,34 +314,31 @@ int shellExecuteInput(char **args)
   else{
     for(i = 0; i < numOfBuiltinFunctions(); i++ ){
       if (strcmp(args[0],builtin_commands[i]) == 0 && i > 3){
-        break;
+        pid_t child = fork();
+        int status; 
+        if (child == -1){
+          printf("fork unsuccessful");
+          return 1;
+        } else if (child == 0){
+          builtin_commandFunc[i](args);
+          exit(1);
+
+        } else if (child > 0){
+          waitpid(child, &status, WUNTRACED);
+          return WEXITSTATUS(WUNTRACED);
+        } else {
+          printf("Error");
+          return 1;
+        }
       } else if (strcmp(args[0], builtin_commands[i]) == 0 && i < 4){
         return builtin_commandFunc[i](args);
 
-      } else {
-        printf("Invalid command. Use help to see the available commands.");
-        return 1;
-        }
       }
-      
-    pid_t child = fork();
-    int status; 
-    if (child == -1){
-      printf("fork unsuccessful");
-      return 1;
-    } else if (child == 0){
-      builtin_commandFunc[i](args);
-      exit(1);
-
-    } else if (child > 0){
-      waitpid(child, &status, WUNTRACED);
-      return WEXITSTATUS(WUNTRACED);
-    } else {
-      printf("Error");
-      return 1;
-
     }
-  }      
+      
+  }
+  printf("Invalid command. Use help to see the available commands.");
+      return 1;  
 }
 
 
