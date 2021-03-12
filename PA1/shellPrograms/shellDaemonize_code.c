@@ -33,44 +33,46 @@ static int create_daemon()
     // 9. Return to main
 
     pid_t child = fork();
-    int status; 
+    
     if (child == -1){
         printf("fork unsuccessful");
         return 1;
         
-    } else if (child == 0){
-        pid_t sid = setsid();
-
-        if (sid == -1) {
-            exit(1);
-        }
-
-        signal(SIGCHLD, SIG_IGN);
-        signal(SIGHUP, SIG_IGN);
-
-        child = fork();
-        umask(0);
-        chdir("/");
-        
-        for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
-            close(x);
-        }
-
-        int fd0 = open("/dev/null", O_RDWR);
-        int fd1 = dup(0);
-        int fd2 = dup(0);
-
-        return 1;
-
     } else if (child > 0){
         exit(1);
-
-    } else {
-        printf("Error creating daemon");
-        return 1;
     }
 
+    pid_t sid = setsid();
+
+    if (sid == -1) {
+        exit(1);
+    }
+
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    child = fork();
+    if (child == -1){
+        printf("fork unsuccessful");
+        return 1;
+        
+    } else if (child > 0){
+        exit(1);
+    }
+
+    umask(0);
+    chdir("/");
+    
+    for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
+        close(x);
+    }
+
+    int fd0 = open("/dev/null", O_RDWR);
+    int fd1 = dup(0);
+    int fd2 = dup(0);
+
     return 1;
+        
 }
 
 static int daemon_work()
