@@ -105,7 +105,6 @@ int shellSummond(char **args)
   return 1;
 }
 
-
 /**
  * Allows one to check daemon process
  * 
@@ -174,7 +173,6 @@ int shellExit(char **args)
 {
   return 0;
 }
-
 
 /*
   Builtin function implementations.
@@ -302,9 +300,8 @@ void shellLoop(void)
   char **args; // to tokenize them as arguments separated by spaces
   int status;  // to tell the shell program whether to terminate shell or not
 
-
   /** TASK 5 **/
-  //write a loop where you do the following: 
+  //write a loop where you do the following:
 
   // 1. print the message prompt
   // 2. clear the buffer and move the output to the console using fflush
@@ -314,9 +311,7 @@ void shellLoop(void)
 
   // 6. free memory location containing the strings of characters
   // 7. free memory location containing char* to the first letter of each word in the input string
-  // 8. check if shellExecuteInput returns 1. If yes, loop back to Step 1 and prompt user with new input. Otherwise, exit the shell. 
-
-
+  // 8. check if shellExecuteInput returns 1. If yes, loop back to Step 1 and prompt user with new input. Otherwise, exit the shell.
 }
 
 int main(int argc, char **argv)
