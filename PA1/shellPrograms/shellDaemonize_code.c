@@ -13,7 +13,7 @@
 #include "shellPrograms.h"
 
 //TODO: change to appropriate path
-char *path = "/Users/natalie_agus/Dropbox/50.005 Computer System Engineering/2020/PA1 Makeshell Daemon/PA1/logfile_test.txt";
+char *path = "/home/miles/Desktop/50.005-CSE-Shell/PA1/logfile_test.txt";
 
 /*This function summons a daemon process out of the current process*/
 static int create_daemon()
@@ -32,7 +32,47 @@ static int create_daemon()
     // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
     // 9. Return to main
 
+    pid_t child = fork();
+    
+    if (child == -1){
+        printf("fork unsuccessful");
+        return 1;
+        
+    } else if (child > 0){
+        exit(1);
+    }
+
+    pid_t sid = setsid();
+
+    if (sid == -1) {
+        exit(1);
+    }
+
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    child = fork();
+    if (child == -1){
+        printf("fork unsuccessful");
+        return 1;
+        
+    } else if (child > 0){
+        exit(1);
+    }
+
+    umask(0);
+    chdir("/");
+    
+    for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
+        close(x);
+    }
+
+    int fd0 = open("/dev/null", O_RDWR);
+    int fd1 = dup(0);
+    int fd2 = dup(0);
+
     return 1;
+        
 }
 
 static int daemon_work()

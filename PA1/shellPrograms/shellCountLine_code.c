@@ -16,7 +16,36 @@ int shellCountLine_code(char **args)
     // 7. Print out how many lines are there in this particular filename
     // 8. Return 1, to exit program
 
+    int counter = 0;
+    char* buffer = malloc(sizeof(int) * 32);
+    
+    size_t size = sizeof(buffer);
+
+    FILE *file = fopen(args[1], "r");
+
+    if (buffer == NULL) {
+        printf(" Buffer is null\n");
+        return 1;
+
+    } else if (args[1] == NULL) {
+        printf(" No file specified\n");
+        return 1;
+
+    } else if ( file == NULL) {
+        printf("File not found.");
+        return 1;
+    }
+
+    while(getline(&buffer, &size, file) > -1) {
+        counter++;
+    }   
+
+    fclose(file);
+    free(buffer);
+    printf("There are %i lines in this file.\n", counter);
     return 1;
+    
+    
 }
 
 int main(int argc, char **args)
