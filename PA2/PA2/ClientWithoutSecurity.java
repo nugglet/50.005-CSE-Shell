@@ -2,9 +2,14 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.cert.CertificateFactory;
 import java.net.Socket;
+import java.security.cert.X509Certificate;
+import java.security.PublicKey;
 
-public class ClientWithoutSecurity {
+
+public class ClientWithoutSecurity{
 
 	public static void main(String[] args) {
 
@@ -32,6 +37,14 @@ public class ClientWithoutSecurity {
 		try {
 
 			System.out.println("Establishing connection to server...");
+
+			InputStream fis = new FileInputStream("cacsertificate.crt");
+			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			X509Certificate CAcert =(X509Certificate)cf.generateCertificate(fis);
+			PublicKey key = CAcert.getPublicKey();
+
+			CAcert.checkValidity();
+			CAcert.verify(key);
 
 			// Connect to server and get the input and output streams
 			clientSocket = new Socket(serverAddress, port);
@@ -73,4 +86,6 @@ public class ClientWithoutSecurity {
 		long timeTaken = System.nanoTime() - timeStarted;
 		System.out.println("Program took: " + timeTaken/1000000.0 + "ms to run");
 	}
+
+	
 }
