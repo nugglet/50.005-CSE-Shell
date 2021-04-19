@@ -20,6 +20,7 @@ javac ClientCP1.java ClientCP2.java ServerCP1.java ServerCP2.java
 ## Running the Program
 
 To run, open two separate terminal instances, one to run the Client script and the other to run the Server.
+Navigate to the correct directory i.e. `cd PA2\PA2`
 
 ### For CP1
 Run on the client terminal:

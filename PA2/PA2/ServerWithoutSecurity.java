@@ -5,12 +5,18 @@ import java.io.FileOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import java.io.*;
+import java.nio.file.*;
+import java.security.*;
+import java.security.spec.*;
+
 public class ServerWithoutSecurity {
 
 	public static void main(String[] args) {
 
-    	int port = 4321;
-    	if (args.length > 0) port = Integer.parseInt(args[0]);
+		int port = 4321;
+		if (args.length > 0)
+			port = Integer.parseInt(args[0]);
 
 		ServerSocket welcomeSocket = null;
 		Socket connectionSocket = null;
@@ -36,19 +42,20 @@ public class ServerWithoutSecurity {
 					System.out.println("Receiving file...");
 
 					int numBytes = fromClient.readInt();
-					byte [] filename = new byte[numBytes];
+					byte[] filename = new byte[numBytes];
 					// Must use read fully!
-					// See: https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
+					// See:
+					// https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
 					fromClient.readFully(filename, 0, numBytes);
 
-					fileOutputStream = new FileOutputStream("recv_"+new String(filename, 0, numBytes));
+					fileOutputStream = new FileOutputStream("recv_" + new String(filename, 0, numBytes));
 					bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
-				// If the packet is for transferring a chunk of the file
+					// If the packet is for transferring a chunk of the file
 				} else if (packetType == 1) {
 
 					int numBytes = fromClient.readInt();
-					byte [] block = new byte[numBytes];
+					byte[] block = new byte[numBytes];
 					fromClient.readFully(block, 0, numBytes);
 
 					if (numBytes > 0)
@@ -57,8 +64,10 @@ public class ServerWithoutSecurity {
 					if (numBytes < 117) {
 						System.out.println("Closing connection...");
 
-						if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
-						if (bufferedFileOutputStream != null) fileOutputStream.close();
+						if (bufferedFileOutputStream != null)
+							bufferedFileOutputStream.close();
+						if (bufferedFileOutputStream != null)
+							fileOutputStream.close();
 						fromClient.close();
 						toClient.close();
 						connectionSocket.close();
@@ -66,8 +75,9 @@ public class ServerWithoutSecurity {
 				}
 
 			}
-		} catch (Exception e) {e.printStackTrace();}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
-
 }

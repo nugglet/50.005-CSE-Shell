@@ -2,3 +2,4 @@ cacsertificate.crt
 certificate_1004289.crt
 private_key.der
 public_key.der
+*.class
