@@ -15,7 +15,13 @@ public class ClientAP {
     private X509Certificate CAcert;
     private X509Certificate ServerCert;
     private PublicKey CAkey;
-    private PublicKey serverKey;
+    private PublicKey serverPublicKey;
+    private static Cipher dCipher;
+    private static Cipher eCipher;
+
+
+    private static byte[] nonce = new byte[32];
+    private static byte[] encryptedNonce = new byte[128];
 
     public static final String path = "cacsertificate.crt";
 
@@ -40,7 +46,7 @@ public class ClientAP {
 
     public void getPublicKey() {
         // Get server public key from certificate
-        this.serverKey = this.ServerCert.getPublicKey();
+        this.serverPublicKey = this.ServerCert.getPublicKey();
     }
 
     public void verify() {
@@ -52,4 +58,36 @@ public class ClientAP {
         }
     }
 
+        // Generate nonce
+        public void generateNonce(){
+            SecureRandom random = new SecureRandom();
+            random.nextBytes(nonce);
+        }
+    
+        // Decrypt encrypted nonce with public key
+        public byte[] decryptNonce(byte[] encryptedNonce) throws Exception {
+            dCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            dCipher.init(Cipher.DECRYPT_MODE, serverPublicKey);
+            return dCipher.doFinal(encryptedNonce);
+        }
+
+        // CP1, encrypt message using public key
+        public byte[] encryptMsg(byte[] fileByte) throws Exception {
+            eCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            eCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
+            return eCipher.doFinal(fileByte);
+        }
+    
+        // Checks that decrypted nonce equals to original nonce
+        public boolean validateNonce(byte[] decryptedNonce){
+            return Arrays.equals(nonce, decryptedNonce);
+        }
+    
+        public byte[] getEncryptedNonce(){
+            return encryptedNonce;
+        }
+    
+        public byte[] getNonce(){
+            return nonce;
+        }
 }

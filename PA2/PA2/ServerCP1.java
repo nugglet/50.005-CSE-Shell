@@ -25,6 +25,8 @@ public class ServerCP1 {
 
         FileOutputStream fileOutputStream = null;
         BufferedOutputStream bufferedFileOutputStream = null;
+        BufferedReader input = null;
+        PrintWriter output = null;
 
         try {
             welcomeSocket = new ServerSocket(port);
@@ -32,7 +34,53 @@ public class ServerCP1 {
             fromClient = new DataInputStream(connectionSocket.getInputStream());
             toClient = new DataOutputStream(connectionSocket.getOutputStream());
 
-            while (!connectionSocket.isClosed()) {
+            input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            output = new PrintWriter(connectionSocket.getOutputStream(), true);
+
+            while (true){
+                String request = input.readLine();
+                if (request.equals("Starting Authentication Handshake Protocol...")){
+                    System.out.println("Client: " + request);
+                    break;
+                }
+                else
+                    System.out.println("Request failed...");
+            }
+
+            // AP protocol
+            ServerAP serverAP = new ServerAP(ServerAP.path);
+            
+            fromClient.read(serverAP.getNonce());
+            System.out.println("Received Nonce");
+            serverAP.encryptNonce();
+
+            System.out.println("Nonce Encrypted, sending it to client");
+            toClient.write(serverAP.getEncryptedNonce());
+            toClient.flush();
+
+            // Waiting to receive certificate request from client
+            while (true){
+                String request = input.readLine();
+                if (request.equals("Request certificate")){
+                    System.out.println("Client: " + request);
+
+                    // Send certificate to client
+                    System.out.println("Sending certificate to client...");
+                    toClient.write(serverAP.getCertificate());
+                    toClient.flush();
+                    break;
+                }
+                else
+                    System.out.println("Request failed...");
+            }
+            
+            // Get size of file from client
+            int fileSize = fromClient.readInt();
+            System.out.println(fileSize);
+            int size = 0;
+            
+
+            while (size < fileSize) {
 
                 int packetType = fromClient.readInt();
 
@@ -55,26 +103,35 @@ public class ServerCP1 {
                 } else if (packetType == 1) {
 
                     int numBytes = fromClient.readInt();
+                    int decryptedNumBytes = fromClient.readInt();
+                    size = size + decryptedNumBytes;
+
                     byte[] block = new byte[numBytes];
                     fromClient.readFully(block, 0, numBytes);
 
-                    if (numBytes > 0)
-                        bufferedFileOutputStream.write(block, 0, numBytes);
+                    byte[] decryptedBlock = ServerAP.decryptMsg(block);
 
-                    if (numBytes < 117) {
-                        System.out.println("Closing connection...");
+                    if (numBytes > 0) {
+                        bufferedFileOutputStream.write(decryptedBlock, 0, decryptedNumBytes);
+                        bufferedFileOutputStream.flush();
 
-                        if (bufferedFileOutputStream != null)
-                            bufferedFileOutputStream.close();
-                        if (bufferedFileOutputStream != null)
-                            fileOutputStream.close();
-                        fromClient.close();
-                        toClient.close();
-                        connectionSocket.close();
                     }
+
                 }
 
             }
+            
+            output.println("Ending transfer...");
+            System.out.println("Closing connection...");
+
+            if (bufferedFileOutputStream != null)
+                bufferedFileOutputStream.close();
+            if (bufferedFileOutputStream != null)
+                fileOutputStream.close();
+            fromClient.close();
+            toClient.close();
+            connectionSocket.close();
+                    
         } catch (Exception e) {
             e.printStackTrace();
         }
