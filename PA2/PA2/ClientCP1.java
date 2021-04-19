@@ -14,19 +14,21 @@ public class ClientCP1 {
 
     public static void main(String[] args) {
 
-        String filename = "100.txt";
-        if (args.length > 0)
-            filename = args[0];
+        String filename[] = new String[1];
+        if (args.length == 0) {
+            filename[0] = "100.txt";
+        } else {
+            filename = new String[args.length];
+            for (int i = 0; i < args.length; i++) {
+                filename[i] = args[i];
+            }
+        }
 
         String serverAddress = "localhost";
-        if (args.length > 1)
-            filename = args[1];
-
         int port = 65535;
-        if (args.length > 2)
-            port = Integer.parseInt(args[2]);
 
         int numBytes = 0;
+        int numFiles = filename.length;
 
         Socket clientSocket = null;
 
@@ -94,39 +96,45 @@ public class ClientCP1 {
 
             System.out.println("Authentication Handshake Protocol complete.");
 
-            System.out.println("Sending file...");
+            System.out.println("Sending files...");
+            toServer.writeInt(numFiles);
 
-            // Open the file
-            fileInputStream = new FileInputStream(filename);
-            bufferedFileInputStream = new BufferedInputStream(fileInputStream);
+            for (String file : filename) {
 
-            byte[] fromFileBuffer = new byte[117];
+                byte[] fromFileBuffer = new byte[117];
 
-            // Send file size
-            int fileSize = fileInputStream.available();
-            toServer.writeInt(fileSize);
-            toServer.flush();
+                // Open the file
+                fileInputStream = new FileInputStream(file);
+                bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
-            // Send the filename
-            toServer.writeInt(0);
-            toServer.writeInt(filename.getBytes().length);
-            toServer.write(filename.getBytes());
-            // toServer.flush();
-
-            // Send the file
-            for (boolean fileEnded = false; !fileEnded;) {
-                numBytes = bufferedFileInputStream.read(fromFileBuffer);
-
-                // Encrypt message
-                byte[] encryptedMsg = clientAP.encryptMsg(fromFileBuffer);
-                fileEnded = numBytes < fromFileBuffer.length;
-                int encryptedBytes = encryptedMsg.length;
-
-                toServer.writeInt(1);
-                toServer.writeInt(encryptedBytes);
-                toServer.writeInt(numBytes);
-                toServer.write(encryptedMsg);
+                // Send file size
+                int fileSize = fileInputStream.available();
+                toServer.writeInt(fileSize);
                 toServer.flush();
+
+                // Send the filename
+                System.out.println("Sending file: " + file);
+                toServer.writeInt(0);
+                toServer.writeInt(file.getBytes().length);
+                toServer.write(file.getBytes());
+                // toServer.flush();
+
+                // Send the file
+                for (boolean fileEnded = false; !fileEnded;) {
+                    numBytes = bufferedFileInputStream.read(fromFileBuffer);
+
+                    // Encrypt message
+                    byte[] encryptedMsg = clientAP.encryptMsg(fromFileBuffer);
+                    fileEnded = numBytes < fromFileBuffer.length;
+                    int encryptedBytes = encryptedMsg.length;
+
+                    toServer.writeInt(1);
+                    toServer.writeInt(encryptedBytes);
+                    toServer.writeInt(numBytes);
+                    toServer.write(encryptedMsg);
+                    toServer.flush();
+                }
+
             }
 
             // Terminate if signal recieved from server

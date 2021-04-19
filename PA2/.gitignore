@@ -3,4 +3,4 @@ certificate_1004289.crt
 private_key.der
 public_key.der
 *.class
-recv_100.txt
+recv_*.txt

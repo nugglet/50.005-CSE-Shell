@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
 import java.security.spec.*;
@@ -77,55 +78,61 @@ public class ServerCP1 {
             // Starts file transfer
             System.out.println("Authentication Handshake Protocol Complete. Starting file transfer...");
 
-            // Get the file size from client
-            int fileSize = fromClient.readInt();
-            System.out.println("File size: " + fileSize);
-            int size = 0;
+            // Get number of files from client
+            int numFiles = fromClient.readInt();
+            System.out.println("Preparing to recieve " + numFiles + " files...");
 
-            while (size < fileSize) {
+            // for each file...
+            for (int i = 0; i < numFiles; i++) {
 
-                int packetType = fromClient.readInt();
-                System.out.println("Packet Type: " + packetType);
+                // Get the file size from client
+                int fileSize = fromClient.readInt();
+                System.out.println("File size: " + fileSize);
+                int size = 0;
 
-                // If the packet is for transferring the filename
-                if (packetType == 0) {
+                while (size < fileSize) {
 
-                    System.out.println("Receiving file name...");
+                    int packetType = fromClient.readInt();
+                    // If the packet is for transferring the filename
+                    if (packetType == 0) {
 
-                    int numBytes = fromClient.readInt();
-                    byte[] filename = new byte[numBytes];
-                    // Must use read fully!
-                    // See:
-                    // https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
-                    fromClient.readFully(filename, 0, numBytes);
+                        int numBytes = fromClient.readInt();
+                        byte[] filename = new byte[numBytes];
 
-                    fileOutputStream = new FileOutputStream("recv_" + new String(filename, 0, numBytes));
-                    bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
+                        // Must use read fully!
+                        // See:
+                        // https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
+                        fromClient.readFully(filename, 0, numBytes);
+                        String name = new String(filename, 0, numBytes);
+                        System.out.println("Recieving file: " + name);
 
-                    // If the packet is for transferring a chunk of the file
-                } else if (packetType == 1) {
+                        fileOutputStream = new FileOutputStream("recv_" + name);
+                        bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
-                    System.out.println("Receiving file content...");
+                        // If the packet is for transferring a chunk of the file
+                    } else if (packetType == 1) {
 
-                    int numBytes = fromClient.readInt();
-                    int decryptedNumBytes = fromClient.readInt();
-                    size += decryptedNumBytes;
+                        int numBytes = fromClient.readInt();
+                        int decryptedBytes = fromClient.readInt();
+                        size += decryptedBytes;
 
-                    byte[] block = new byte[numBytes];
-                    fromClient.read(block);
+                        byte[] msg = new byte[numBytes];
+                        fromClient.read(msg);
 
-                    byte[] decryptedBlock = ServerAP.decryptMsg(block);
+                        byte[] decryptedMsg = ServerAP.decryptMsg(msg);
 
-                    if (numBytes > 0) {
-                        bufferedFileOutputStream.write(decryptedBlock, 0, decryptedNumBytes);
-                        bufferedFileOutputStream.flush();
+                        if (numBytes > 0) {
+                            bufferedFileOutputStream.write(decryptedMsg, 0, decryptedBytes);
+                            bufferedFileOutputStream.flush();
 
+                        }
                     }
                 }
+                System.out.println("File successfully recieved.");
             }
 
             output.println("Ending transfer");
-            System.out.println("Closing connection...");
+            System.out.println("All files recieved. Closing connection...");
 
             if (bufferedFileOutputStream != null)
                 bufferedFileOutputStream.close();
