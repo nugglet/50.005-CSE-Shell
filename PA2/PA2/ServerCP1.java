@@ -14,7 +14,7 @@ public class ServerCP1 {
 
     public static void main(String[] args) {
 
-        int port = 4321;
+        int port = 65535;
         if (args.length > 0)
             port = Integer.parseInt(args[0]);
 
@@ -37,20 +37,19 @@ public class ServerCP1 {
             input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             output = new PrintWriter(connectionSocket.getOutputStream(), true);
 
-            while (true){
+            while (true) {
                 String request = input.readLine();
-                if (request.equals("Starting Authentication Handshake Protocol...")){
+                if (request.equals("Starting Authentication Handshake Protocol...")) {
                     System.out.println("Client: " + request);
                     break;
-                }
-                else {
+                } else {
                     System.out.println("Request failed...");
                 }
             }
 
             // AP protocol
             ServerAP serverAP = new ServerAP(ServerAP.path);
-            
+
             fromClient.read(serverAP.getNonce());
             System.out.println("Received Nonce");
             serverAP.encryptNonce();
@@ -60,9 +59,9 @@ public class ServerCP1 {
             toClient.flush();
 
             // Waiting to receive certificate request from client
-            while (true){
+            while (true) {
                 String request = input.readLine();
-                if (request.equals("Request certificate")){
+                if (request.equals("Request certificate")) {
                     System.out.println("Client: " + request);
 
                     // Send certificate to client
@@ -70,15 +69,14 @@ public class ServerCP1 {
                     toClient.write(serverAP.getCertificate());
                     toClient.flush();
                     break;
-                }
-                else{
+                } else {
                     System.out.println("Request failed...");
                 }
             }
 
             // Starts file transfer
             System.out.println("Authentication Handshake Protocol Complete. Starting file transfer...");
-            
+
             // Get the file size from client
             int fileSize = fromClient.readInt();
             System.out.println("File size: " + fileSize);
@@ -95,7 +93,7 @@ public class ServerCP1 {
                     System.out.println("Receiving file name...");
 
                     int numBytes = fromClient.readInt();
-                    byte[] filename = new byte[numBytes]; 
+                    byte[] filename = new byte[numBytes];
                     // Must use read fully!
                     // See:
                     // https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
@@ -125,7 +123,7 @@ public class ServerCP1 {
                     }
                 }
             }
-            
+
             output.println("Ending transfer");
             System.out.println("Closing connection...");
 
@@ -136,7 +134,7 @@ public class ServerCP1 {
             fromClient.close();
             toClient.close();
             connectionSocket.close();
-                    
+
         } catch (Exception e) {
             e.printStackTrace();
         }
