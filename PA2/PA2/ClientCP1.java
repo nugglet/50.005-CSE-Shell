@@ -69,7 +69,7 @@ public class ClientCP1 {
             System.out.println("Sending nonce to server...");
             toServer.write(clientAP.getNonce());
 
-            // Recieve Nonce and Certififate
+            // Recieve Nonce and Certificate
             fromServer.read(clientAP.getEncryptedNonce());
             output.println("Request certificate");
             clientAP.getCertificate(fromServer);
@@ -82,13 +82,15 @@ public class ClientCP1 {
             clientAP.getPublicKey();
             decryptedNonce = clientAP.decryptNonce(clientAP.getEncryptedNonce());
 
-            if (clientAP.getNonce() == decryptedNonce) {
+            if (clientAP.validateNonce(decryptedNonce)) {
                 System.out.println("Server verified.");
             } else {
+
                 System.out.println("Server verification failed. Connection compromised, closing all connections...");
                 toServer.close();
                 fromServer.close();
                 clientSocket.close();
+                return;
             }
 
             System.out.println("Authentication Handshake Protocol complete.");
@@ -125,8 +127,8 @@ public class ClientCP1 {
 
             // Terminate if signal recieved from server
             while (true) {
-                String signal = fromServer.readUTF();
-                if (signal.equals("Ending transfer...")) {
+                String signal = input.readLine();
+                if (signal.equals("Ending transfer")) {
                     System.out.println("Server: " + signal);
                     break;
                 } else

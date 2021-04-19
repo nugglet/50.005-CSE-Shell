@@ -43,8 +43,9 @@ public class ServerCP1 {
                     System.out.println("Client: " + request);
                     break;
                 }
-                else
+                else {
                     System.out.println("Request failed...");
+                }
             }
 
             // AP protocol
@@ -70,27 +71,31 @@ public class ServerCP1 {
                     toClient.flush();
                     break;
                 }
-                else
+                else{
                     System.out.println("Request failed...");
+                }
             }
+
+            // Starts file transfer
+            System.out.println("Authentication Handshake Protocol Complete. Starting file transfer...");
             
-            // Get size of file from client
+            // Get the file size from client
             int fileSize = fromClient.readInt();
-            System.out.println(fileSize);
+            System.out.println("File size: " + fileSize);
             int size = 0;
-            
 
             while (size < fileSize) {
 
                 int packetType = fromClient.readInt();
+                System.out.println("Packet Type: " + packetType);
 
                 // If the packet is for transferring the filename
                 if (packetType == 0) {
 
-                    System.out.println("Receiving file...");
+                    System.out.println("Receiving file name...");
 
                     int numBytes = fromClient.readInt();
-                    byte[] filename = new byte[numBytes];
+                    byte[] filename = new byte[numBytes]; 
                     // Must use read fully!
                     // See:
                     // https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
@@ -102,12 +107,14 @@ public class ServerCP1 {
                     // If the packet is for transferring a chunk of the file
                 } else if (packetType == 1) {
 
+                    System.out.println("Receiving file content...");
+
                     int numBytes = fromClient.readInt();
                     int decryptedNumBytes = fromClient.readInt();
-                    size = size + decryptedNumBytes;
+                    size += decryptedNumBytes;
 
                     byte[] block = new byte[numBytes];
-                    fromClient.readFully(block, 0, numBytes);
+                    fromClient.read(block);
 
                     byte[] decryptedBlock = ServerAP.decryptMsg(block);
 
@@ -116,12 +123,10 @@ public class ServerCP1 {
                         bufferedFileOutputStream.flush();
 
                     }
-
                 }
-
             }
             
-            output.println("Ending transfer...");
+            output.println("Ending transfer");
             System.out.println("Closing connection...");
 
             if (bufferedFileOutputStream != null)
