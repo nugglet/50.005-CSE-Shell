@@ -13,37 +13,54 @@ Java is required to run the program. This program was created in JDK 13 and high
 Compile the program using the `javac` command
 
 ```
-javac ClientCP1.java ClientCP2.java ServerCP1.java ServerCP2.java
+javac ClientCP1.java ClientCP2.java ServerCP1.java ServerCP2.java ClientAP.java ServerAP.java
 
 ```
 
 ## Running the Program
 
 To run, open two separate terminal instances, one to run the Client script and the other to run the Server.
-Navigate to the correct directory i.e. `cd PA2\PA2`
+First, navigate to the correct directory i.e. `cd PA2\PA2`
 
 ### For CP1
-Run on the client terminal:
-```
-java ClientCP1
-```
-and on the server terminal:
+Run on the server terminal:
 ```
 java ServerCP1
 ```
 
+and on the client terminal:
+```
+java ClientCP1
+```
+
+you can also run the client with filenames as command line arguments like so:
+```
+java ClientCP1 100.txt 1000.txt 5000.txt
+```
+
+
 ### For CP2
-Run on the client terminal:
-```
-java ClientCP2
-```
-and on the server terminal:
+Run on the server terminal:
 ```
 java ServerCP2
 ```
 
+and on the client terminal:
+```
+java ClientCP2
+```
+you can also run the client with filenames as command line arguments like so:
+```
+java ClientCP2 100.txt 1000.txt 5000.txt
+
+```
+
+<i>Note: Please run the server before the client.</i>
+
 ## Specifications
 
 ## Output
+The output files are named recv_<your_filename>
+Multiple output files will be produced if multiple input files are specified in the command line.
 
 ## Conclusion
