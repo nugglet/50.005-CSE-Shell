@@ -120,8 +120,12 @@ public class ServerCP2 {
             int numFiles = fromClient.readInt();
             System.out.println("Preparing to recieve " + numFiles + " files...");
 
+            long allFilesStart = System.nanoTime();
+
             // for each file...
             for (int i = 0; i < numFiles; i++) {
+
+                long currentFileStart = System.nanoTime();
 
                 // Get the file size from client
                 int fileSize = fromClient.readInt();
@@ -169,7 +173,12 @@ public class ServerCP2 {
                     }
                 }
                 System.out.println("File successfully recieved.");
+                long currentFileEnd = System.nanoTime() - currentFileStart;
+                System.out.println("Time taken for file: " + currentFileEnd / 1000000.0 + "ms");
             }
+
+            long allFilesEnd = System.nanoTime() - allFilesStart;
+            System.out.println("Time taken for all files: " + allFilesEnd / 1000000.0 + "ms");
 
             output.println("Ending transfer");
             System.out.println("All files recieved. Closing connection...");
