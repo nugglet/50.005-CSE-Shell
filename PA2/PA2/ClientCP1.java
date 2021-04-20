@@ -85,6 +85,7 @@ public class ClientCP1 {
 
             if (clientAP.validateNonce(decryptedNonce)) {
                 System.out.println("Server verified.");
+                output.println("Server verified");
             } else {
 
                 System.out.println("Server verification failed. Connection compromised, closing all connections...");
