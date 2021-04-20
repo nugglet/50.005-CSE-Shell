@@ -5,11 +5,17 @@ import java.io.FileOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
 import java.security.spec.*;
+
+import javax.crypto.Cipher;
 
 public class ServerCP2 {
 
@@ -19,15 +25,22 @@ public class ServerCP2 {
         if (args.length > 0)
             port = Integer.parseInt(args[0]);
 
+        // Socket variables
         ServerSocket welcomeSocket = null;
         Socket connectionSocket = null;
         DataOutputStream toClient = null;
         DataInputStream fromClient = null;
 
+        // AP Variables
         FileOutputStream fileOutputStream = null;
         BufferedOutputStream bufferedFileOutputStream = null;
         BufferedReader input = null;
         PrintWriter output = null;
+
+        // AES Variables
+        byte[] eSKey;
+        SecretKey sessionKey;
+        Cipher sessionCipher;
 
         try {
             welcomeSocket = new ServerSocket(port);
@@ -76,10 +89,32 @@ public class ServerCP2 {
             }
 
             // Waiting for client to finish verification
-            System.out.println("Client: " + inputReader.readLine());
+            System.out.println("Client: " + input.readLine());
 
             // Starts file transfer
             System.out.println("Authentication Handshake Protocol Complete. Starting file transfer...");
+
+            // Get session key from client
+            sessionCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            int signal = fromClient.readInt();
+            BufferedInputStream inputStream = new BufferedInputStream(connectionSocket.getInputStream());
+
+            if (signal == 3) {
+                // Client is sending session key
+                int eSKeySize = fromClient.readInt();
+                eSKey = new byte[eSKeySize];
+                fromClient.readFully(eSKey);
+
+                String printSKey = new String(eSKey, 0, eSKeySize);
+
+                // Decrypt session key using private key
+                System.out.println("Received encrypted session key of size: " + eSKeySize);
+                System.out.println("Encrypted session key: " + printSKey);
+                System.out.println("Decrypting session key...");
+                byte[] decryptedSKey = serverAP.decryptMsg(eSKey);
+                sessionKey = new SecretKeySpec(decryptedSKey, 0, decryptedSKey.length, "AES");
+                sessionCipher.init(Cipher.DECRYPT_MODE, sessionKey);
+            }
 
             // Get number of files from client
             int numFiles = fromClient.readInt();
@@ -96,9 +131,9 @@ public class ServerCP2 {
                 while (size < fileSize) {
 
                     int packetType = fromClient.readInt();
-                    // If the packet is for transferring the filename
-                    if (packetType == 0) {
 
+                    if (packetType == 0) {
+                        // Client is sending file name
                         int numBytes = fromClient.readInt();
                         byte[] filename = new byte[numBytes];
 
@@ -115,17 +150,19 @@ public class ServerCP2 {
                         // If the packet is for transferring a chunk of the file
                     } else if (packetType == 1) {
 
-                        int numBytes = fromClient.readInt();
-                        int decryptedBytes = fromClient.readInt();
-                        size += decryptedBytes;
+                        int decryptedBytes = fromClient.readInt(); // encryptedMsg.length
+                        int fSize = fromClient.readInt(); // numbytes
 
-                        byte[] msg = new byte[numBytes];
-                        fromClient.read(msg);
+                        size += fSize;
 
-                        byte[] decryptedMsg = ServerAP.decryptMsg(msg);
+                        byte[] msg = new byte[decryptedBytes];
+                        fromClient.readFully(msg, 0, decryptedBytes);
 
-                        if (numBytes > 0) {
-                            bufferedFileOutputStream.write(decryptedMsg, 0, decryptedBytes);
+                        // decrypt message with session key
+                        byte[] decryptedMsg = sessionCipher.doFinal(msg);
+
+                        if (decryptedBytes > 0) {
+                            bufferedFileOutputStream.write(decryptedMsg, 0, fSize);
                             bufferedFileOutputStream.flush();
 
                         }

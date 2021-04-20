@@ -76,7 +76,7 @@ public class ServerCP1 {
             }
 
             // Waiting for client to finish verification
-            System.out.println("Client: " + inputReader.readLine());
+            System.out.println("Client: " + input.readLine());
 
             // Starts file transfer
             System.out.println("Authentication Handshake Protocol Complete. Starting file transfer...");

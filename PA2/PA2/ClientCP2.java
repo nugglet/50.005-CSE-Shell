@@ -5,6 +5,10 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 import java.security.cert.CertificateFactory;
 import java.net.Socket;
 import java.security.cert.X509Certificate;
@@ -43,6 +47,9 @@ public class ClientCP2 {
         byte[] decryptedNonce;
         PrintWriter output = null;
         BufferedReader input = null;
+
+        SecretKey sessionKey;
+        Cipher sessionCipher;
 
         try {
 
@@ -97,6 +104,24 @@ public class ClientCP2 {
 
             System.out.println("Authentication Handshake Protocol complete.");
 
+            // Generate AES Key
+            sessionKey = KeyGenerator.getInstance("AES").generateKey();
+            sessionCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            sessionCipher.init(Cipher.ENCRYPT_MODE, sessionKey);
+
+            // encrypt the session key
+            byte[] eSKey = clientAP.encryptMsg(sessionKey.getEncoded());
+            String printeSKey = new String(eSKey, 0, eSKey.length);
+            System.out.println("Encrypted session key: " + printeSKey);
+
+            // notify server that the session key is coming
+            toServer.writeInt(3);
+            toServer.writeInt(eSKey.length);
+            toServer.write(eSKey);
+            // toServer.flush();
+
+            System.out.println("Sent encrypted session key");
+
             System.out.println("Sending files...");
             toServer.writeInt(numFiles);
 
@@ -125,14 +150,16 @@ public class ClientCP2 {
                     numBytes = bufferedFileInputStream.read(fromFileBuffer);
 
                     // Encrypt message
-                    byte[] encryptedMsg = clientAP.encryptMsg(fromFileBuffer);
+                    byte[] encryptedMsg = sessionCipher.doFinal(fromFileBuffer);
                     fileEnded = numBytes < fromFileBuffer.length;
                     int encryptedBytes = encryptedMsg.length;
 
                     toServer.writeInt(1);
                     toServer.writeInt(encryptedBytes);
                     toServer.writeInt(numBytes);
-                    toServer.write(encryptedMsg);
+                    toServer.flush();
+
+                    toServer.write(encryptedMsg, 0, encryptedBytes);
                     toServer.flush();
                 }
 
