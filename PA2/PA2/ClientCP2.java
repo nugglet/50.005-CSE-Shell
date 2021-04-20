@@ -123,6 +123,7 @@ public class ClientCP2 {
             System.out.println("Sent encrypted session key");
 
             System.out.println("Sending files...");
+            long fileTime = System.nanoTime();
             toServer.writeInt(numFiles);
 
             for (String file : filename) {
@@ -179,6 +180,8 @@ public class ClientCP2 {
             fileInputStream.close();
 
             System.out.println("Closing connection...");
+            long fileEndTime = System.nanoTime() - fileTime;
+            System.out.println("File transfer took: " + fileEndTime / 1000000.0 + "ms to run");
 
         } catch (Exception e) {
             e.printStackTrace();

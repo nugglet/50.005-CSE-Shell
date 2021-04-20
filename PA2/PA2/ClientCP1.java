@@ -98,6 +98,8 @@ public class ClientCP1 {
             System.out.println("Authentication Handshake Protocol complete.");
 
             System.out.println("Sending files...");
+            long fileTime = System.nanoTime();
+
             toServer.writeInt(numFiles);
 
             for (String file : filename) {
@@ -152,6 +154,8 @@ public class ClientCP1 {
             fileInputStream.close();
 
             System.out.println("Closing connection...");
+            long fileEndTime = System.nanoTime() - fileTime;
+            System.out.println("File transfer took: " + fileEndTime / 1000000.0 + "ms to run");
 
         } catch (Exception e) {
             e.printStackTrace();
