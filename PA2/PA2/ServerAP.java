@@ -20,13 +20,12 @@ public class ServerAP {
 
     private InputStream fis;
     private CertificateFactory cf = null;
-    private KeyFactory kf = null;
     private byte[] certificate;
     private X509Certificate ServerCert;
     private PublicKey serverPublicKey;
     private static PrivateKey privateKey;
 
-    //Nonce
+    // Nonce
     private static byte[] nonce = new byte[32];
     private static byte[] encryptedNonce = new byte[128];
     private static Cipher eCipher;
@@ -51,7 +50,7 @@ public class ServerAP {
             this.serverPublicKey = this.ServerCert.getPublicKey();
 
             // Get server private key
-            this.privateKey = getPrivateKey(keyPath);
+            privateKey = getPrivateKey(keyPath);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,7 +83,7 @@ public class ServerAP {
         eCipher.init(Cipher.ENCRYPT_MODE, privateKey);
         encryptedNonce = eCipher.doFinal(nonce);
     }
-    
+
     // CP1, decrypt message sent by client using private key
     public static byte[] decryptMsg(byte[] fileByte) throws Exception {
         dCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -103,5 +102,5 @@ public class ServerAP {
     public byte[] getCertificate() {
         return certificate;
     }
-    
+
 }
