@@ -4,3 +4,5 @@ private_key.der
 public_key.der
 *.class
 recv_*.txt
+10M.txt
+recv*.txt
